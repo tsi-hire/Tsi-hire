@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TSI Hire | Remote Careers</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Times New Roman",serif;color:#222;background:#fff}
+header{padding:18px 6%;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:32px;font-weight:bold;letter-spacing:5px;color:#10243e}nav button{border:0;background:none;font:inherit;margin-left:15px;cursor:pointer}
+main{max-width:1050px;margin:auto;padding:35px 6%}.hero{text-align:center;padding:45px 0}.hero h1{font-size:42px;margin:10px}.hero p{font-size:19px;line-height:1.6}
+h2{font-size:30px}.panel{border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:25px 0;margin:25px 0}
+button,.btn{background:#142235;color:white;border:0;border-radius:4px;padding:11px 18px;font:inherit;cursor:pointer}.secondary{background:#eee;color:#222}
+.hidden{display:none}.form{max-width:620px;margin:auto}.form label{display:block;font-weight:bold;margin:15px 0}.form input,.form select,.form textarea{width:100%;padding:11px;margin-top:6px;border:1px solid #aaa;border-radius:4px;font:inherit}.form textarea{min-height:110px}
+.notice{padding:14px;margin:15px 0;border:1px solid #ddd;background:#f7f7f7}.ok{background:#f1faf2;border-color:#9bc8a0}.err{background:#fff4f4;border-color:#d5a0a0}
+.jobs{columns:3}.jobs li{margin:7px 0;font-size:17px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{border:1px solid #ddd;padding:20px}.status{font-weight:bold}
+footer{text-align:center;border-top:1px solid #ddd;padding:25px;color:#666;margin-top:30px}
+@media(max-width:700px){header{display:block}.jobs{columns:2}.cards{grid-template-columns:1fr}.hero h1{font-size:34px}nav button{margin:10px 10px 0 0}}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">TSI</div>
+<nav>
+<button onclick="page('home')">Home</button><button onclick="page('jobs')">Jobs</button>
+<button id="loginBtn" onclick="page('login')">Login</button>
+<button id="registerBtn" onclick="page('register')">Register</button>
+<button id="dashBtn" class="hidden" onclick="page('dashboard')">Dashboard</button>
+<button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</nav>
+</header>
+
+<main>
+<section id="home">
+<div class="hero"><h1>Remote Career Opportunities with TSI</h1>
+<p>TSI connects talented people with flexible remote opportunities across the United States, Canada and Europe.</p>
+<button onclick="page('register')">Create Applicant Account</button></div>
+<div class="panel"><h2>Online Training &amp; Orientation</h2>
+<p>Our virtual training program is designed to equip successful applicants with the skills and knowledge needed for their selected role. Training is available online by PC or phone.</p></div>
+</section>
+
+<section id="jobs" class="hidden"><h2>Available Roles</h2><p>Applicants must create an account before submitting an application.</p>
+<ul class="jobs">
+<li>Transcriptionist</li><li>Bookkeeper</li><li>Freelance Writer</li><li>Sales Representative</li><li>Recruiter</li><li>Content Marketer</li><li>Inbound Call Agent</li><li>Accounting Payroll Clerk</li><li>Administrative Assistant</li><li>Bookkeeping</li><li>Front Desk Clerk</li><li>Typist Clerk</li><li>Project Management</li><li>Operations Manager</li><li>Dispatcher</li><li>Copywriter</li><li>Medical Coder</li><li>Social Media Manager</li><li>Customer Service Representative</li><li>Sales Associate</li><li>Data Analysis</li><li>Virtual Assistant</li><li>Data Entry Clerk</li>
+</ul></section>
+
+<section id="register" class="hidden"><div class="form"><h2>Create Applicant Account</h2><div id="regMsg"></div>
+<label>Full name<input id="regName" autocomplete="name"></label>
+<label>Email<input id="regEmail" type="email" autocomplete="email"></label>
+<label>Password<input id="regPassword" type="password" minlength="6" autocomplete="new-password"></label>
+<button onclick="register()">Create Account</button></div></section>
+
+<section id="verify" class="hidden"><div class="form"><h2>Verify Your Email</h2>
+<div class="notice ok">Your account was created. Check your email and click the verification link before logging in.</div>
+<button onclick="page('login')">Go to Login</button></div></section>
+
+<section id="login" class="hidden"><div class="form"><h2>Applicant Login</h2><div id="loginMsg"></div>
+<label>Email<input id="loginEmail" type="email"></label>
+<label>Password<input id="loginPassword" type="password"></label>
+<button onclick="login()">Login</button>
+<button class="secondary" onclick="resetPassword()">Forgot password?</button></div></section>
+
+<section id="dashboard" class="hidden"><h2>Applicant Dashboard</h2>
+<div class="cards">
+<div class="card"><h3>Profile</h3><p id="profileSummary">Loading...</p><button onclick="page('profile')">Edit Profile</button></div>
+<div class="card"><h3>Identity Verification</h3><p>Status: <span id="idStatus" class="status">Not submitted</span></p><button onclick="page('identity')">Verify Identity</button></div>
+<div class="card"><h3>Job Application</h3><p id="appSummary">No application yet.</p><button onclick="page('application')">Apply</button></div>
+</div></section>
+
+<section id="profile" class="hidden"><div class="form"><h2>Applicant Profile</h2><div id="profileMsg"></div>
+<label>Full name<input id="pName"></label><label>Date of birth<input id="pDob" type="date"></label>
+<label>Country<input id="pCountry"></label><label>City<input id="pCity"></label>
+<button onclick="saveProfile()">Save Profile</button></div></section>
+
+<section id="identity" class="hidden"><div class="form"><h2>Identity Verification</h2>
+<div class="notice">Upload a government-issued ID for verification. Documents are stored in private storage. Do not upload a Social Security card.</div><div id="idMsg"></div>
+<label>Document type<select id="docType"><option>Passport</option><option>National ID</option><option>Driver's Licence</option><option>Other Government ID</option></select></label>
+<label>Issuing country<input id="docCountry"></label>
+<label>ID document<input id="idFile" type="file" accept="image/*,.pdf"></label>
+<button onclick="submitID()">Submit for Verification</button></div></section>
+
+<section id="application" class="hidden"><div class="form"><h2>Job Application</h2><div id="appMsg"></div>
+<label>Position<select id="position"><option>Transcriptionist</option><option>Bookkeeper</option><option>Freelance Writer</option><option>Sales Representative</option><option>Recruiter</option><option>Content Marketer</option><option>Inbound Call Agent</option><option>Accounting Payroll Clerk</option><option>Administrative Assistant</option><option>Bookkeeping</option><option>Front Desk Clerk</option><option>Typist Clerk</option><option>Project Management</option><option>Operations Manager</option><option>Dispatcher</option><option>Copywriter</option><option>Medical Coder</option><option>Social Media Manager</option><option>Customer Service Representative</option><option>Sales Associate</option><option>Data Analysis</option><option>Virtual Assistant</option><option>Data Entry Clerk</option></select></label>
+<label>Why are you interested in this role?<textarea id="cover"></textarea></label>
+<button onclick="submitApplication()">Submit Application</button></div></section>
+</main>
+
+<footer>© 2026 TSI • Remote Career Opportunities • Telegram: @tsi_hire</footer>
+
+<script>
+const SUPABASE_URL="https://sxdyrmvfizjmpmubjmwo.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_nMN-LaIE9PjiwV7t610Xxw_WSwqSCxV";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
+const pages=["home","jobs","register","verify","login","dashboard","profile","identity","application"];
+function page(id){pages.forEach(x=>document.getElementById(x).classList.add("hidden"));document.getElementById(id).classList.remove("hidden");window.scrollTo(0,0);if(id==="dashboard")loadDashboard();if(id==="profile")loadProfile();}
+function msg(id,text,ok=false){document.getElementById(id).innerHTML='<div class="notice '+(ok?'ok':'err')+'">'+text+'</div>';}
+async function getUser(){const r=await db.auth.getUser();return r.data.user;}
+async function nav(){const u=await getUser();loginBtn.classList.toggle("hidden",!!u);registerBtn.classList.toggle("hidden",!!u);dashBtn.classList.toggle("hidden",!u);logoutBtn.classList.toggle("hidden",!u);}
+async function register(){
+ const name=regName.value.trim(),email=regEmail.value.trim(),password=regPassword.value;
+ if(!name||!email||password.length<6)return msg("regMsg","Enter your name, a valid email and a password of at least 6 characters.");
+ const r=await db.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:location.href}});
+ if(r.error)return msg("regMsg",r.error.message);
+ if(r.data.user)await db.from("profiles").upsert({id:r.data.user.id,full_name:name,email});
+ page("verify");
+}
+async function login(){
+ const r=await db.auth.signInWithPassword({email:loginEmail.value.trim(),password:loginPassword.value});
+ if(r.error)return msg("loginMsg",r.error.message);
+ page("dashboard");nav();
+}
+async function resetPassword(){
+ const email=loginEmail.value.trim();if(!email)return msg("loginMsg","Enter your email first.");
+ const r=await db.auth.resetPasswordForEmail(email,{redirectTo:location.href});
+ msg("loginMsg",r.error?r.error.message:"Password reset instructions have been sent.",!r.error);
+}
+async function logout(){await db.auth.signOut();page("home");nav();}
+async function loadDashboard(){
+ const u=await getUser();if(!u)return page("login");
+ const p=await db.from("profiles").select("*").eq("id",u.id).maybeSingle();
+ profileSummary.textContent=p.data?.full_name||u.email;
+ const v=await db.from("identity_verifications").select("status").eq("applicant_id",u.id).maybeSingle();
+ idStatus.textContent=v.data?.status||"Not submitted";
+ const a=await db.from("applications").select("position,status").eq("applicant_id",u.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
+ appSummary.textContent=a.data?(a.data.position+" — "+a.data.status):"No application yet.";
+}
+async function loadProfile(){
+ const u=await getUser();if(!u)return page("login");
+ const r=await db.from("profiles").select("*").eq("id",u.id).maybeSingle(),p=r.data||{};
+ pName.value=p.full_name||u.user_metadata?.full_name||"";pDob.value=p.date_of_birth||"";pCountry.value=p.country||"";pCity.value=p.city||"";
+}
+async function saveProfile(){
+ const u=await getUser();
+ const r=await db.from("profiles").upsert({id:u.id,full_name:pName.value.trim(),email:u.email,date_of_birth:pDob.value||null,country:pCountry.value.trim(),city:pCity.value.trim(),updated_at:new Date().toISOString()});
+ msg("profileMsg",r.error?r.error.message:"Profile saved successfully.",!r.error);
+}
+async function submitID(){
+ const u=await getUser(),file=idFile.files[0];if(!file)return msg("idMsg","Please choose an ID document.");
+ if(file.size>10*1024*1024)return msg("idMsg","Maximum file size is 10 MB.");
+ const path=u.id+"/"+Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+ const up=await db.storage.from("identity-documents").upload(path,file);
+ if(up.error)return msg("idMsg",up.error.message);
+ const r=await db.from("identity_verifications").upsert({applicant_id:u.id,document_type:docType.value,document_country:docCountry.value.trim(),document_path:path,status:"pending",submitted_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ msg("idMsg",r.error?r.error.message:"ID submitted securely. Status: Pending.",!r.error);
+}
+async function submitApplication(){
+ const u=await getUser(),v=await db.from("identity_verifications").select("status").eq("applicant_id",u.id).maybeSingle();
+ if(!v.data||v.data.status!=="verified")return msg("appMsg","Please complete identity verification and wait for verification before applying.");
+ const r=await db.from("applications").insert({applicant_id:u.id,position:position.value,cover_letter:cover.value.trim(),status:"submitted"});
+ msg("appMsg",r.error?r.error.message:"Application submitted successfully.",!r.error);
+}
+db.auth.onAuthStateChange(()=>nav());nav();
+</script>
+</body>
+</html>

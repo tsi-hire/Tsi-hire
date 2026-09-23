@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSI — Hire Remote Talent</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+:root{--navy:#071a33;--blue:#126df3;--light:#f5f8fc;--border:#dfe7f0;--text:#243449;--muted:#64748b}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:#fff}
+a{text-decoration:none}
+button,input{font:inherit}
+nav{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 7%;border-bottom:1px solid #e5ebf3;background:#fff;position:sticky;top:0;z-index:20}
+.brand{font-weight:900;font-size:30px;letter-spacing:2px;color:var(--navy)}
+.brand span{color:var(--blue)}
+.navlinks{display:flex;align-items:center;gap:22px}
+.navlinks a{color:var(--navy);font-weight:700}
+.btn{background:var(--blue);color:#fff;border:0;padding:13px 20px;border-radius:9px;font-weight:700;cursor:pointer;display:inline-block}
+.btn.secondary{background:#eef3f8;color:var(--navy)}
+.hero{max-width:1200px;margin:auto;padding:90px 7%;display:grid;grid-template-columns:1.1fr .9fr;gap:55px;align-items:center}
+.badge{display:inline-block;background:#eaf2ff;color:var(--blue);padding:8px 13px;border-radius:30px;font-weight:700;font-size:13px}
+h1{font-size:58px;line-height:1.05;color:var(--navy);margin:18px 0}
+h1 span{color:var(--blue)}
+h2{font-size:38px;color:var(--navy);margin:0 0 12px}
+h3{color:var(--navy)}
+p{font-size:18px;line-height:1.65;color:var(--muted)}
+.hero-card{background:var(--navy);color:#fff;padding:42px;border-radius:25px}
+.hero-card h2{color:#fff}
+.hero-card p{color:#d7e4f3}
+.stats{display:flex;gap:15px}
+.stat{background:#ffffff12;padding:17px;border-radius:12px;flex:1}
+.stat b{display:block;font-size:27px}
+section{max-width:1200px;margin:auto;padding:75px 7%}
+.center{text-align:center}
+.jobs{display:flex;flex-wrap:wrap;gap:11px;justify-content:center;margin-top:30px}
+.job{padding:12px 15px;background:#f1f5fa;border:1px solid var(--border);border-radius:9px;font-size:14px}
+.band{max-width:none;background:var(--light)}
+.band>div{max-width:1050px;margin:auto}
+.steps{max-width:800px;margin:35px auto}
+.step{padding-left:60px;position:relative;margin:30px 0}
+.step:before{content:attr(data-n);position:absolute;left:0;width:42px;height:42px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:700}
+.cta{background:var(--navy);color:#fff;border-radius:24px;padding:50px;display:flex;justify-content:space-between;align-items:center;gap:30px}
+.cta h2{color:#fff}.cta p{color:#d5e1ef}
+footer{padding:30px;text-align:center;background:var(--light);color:#6b7a8d}
+
+.page{min-height:calc(100vh - 76px)}
+.auth-page{background:var(--light);padding:65px 20px}
+.auth-wrap{max-width:520px;margin:auto}
+.auth-card{background:#fff;padding:36px;border-radius:18px;box-shadow:0 12px 35px rgba(7,26,51,.08)}
+.form{margin-top:22px}
+.form label{display:block;font-weight:700;color:var(--navy);margin-bottom:17px}
+.form input{display:block;width:100%;margin-top:8px;padding:14px 15px;border:1px solid #ccd7e4;border-radius:9px;font-size:16px;outline:none}
+.form input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #126df31a}
+.full{width:100%;margin-top:5px}
+.switch{text-align:center;font-size:14px!important;margin-top:20px}
+.switch a{color:var(--blue);font-weight:700}
+.message{margin-top:15px;padding:12px;border-radius:8px;font-size:14px;line-height:1.5}
+.message.error{background:#fff3f3;border:1px solid #e1b1b1;color:#8a2525}
+.message.success{background:#edf9f0;border:1px solid #a8d5b0;color:#246b35}
+
+.access-page{min-height:calc(100vh - 76px);display:flex;align-items:center;justify-content:center;background:var(--light);padding:30px}
+.access-card{max-width:650px;width:100%;background:#fff;border-radius:22px;padding:45px;text-align:center;box-shadow:0 15px 45px rgba(7,26,51,.09)}
+.telegram{font-size:24px;font-weight:800;color:var(--blue);margin:18px 0 25px}
+
+.dashboard-page{min-height:calc(100vh - 76px);background:#f5f8fc}
+.dashboard{display:flex;min-height:calc(100vh - 76px)}
+.sidebar{width:245px;background:var(--navy);color:#fff;padding:28px 18px;flex-shrink:0}
+.side-brand{font-weight:900;font-size:28px;letter-spacing:2px;padding:0 12px 35px}
+.side-brand span{color:#2e83ff}
+.side-link{display:block;color:#d7e4f3;padding:13px 14px;border-radius:9px;margin-bottom:7px;font-weight:700}
+.side-link.active,.side-link:hover{background:#ffffff14;color:#fff}
+.dashboard-main{flex:1;padding:35px 4%;overflow:hidden}
+.dash-head{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:28px}
+.dash-head h1{font-size:34px;margin:0}
+.user-pill{background:#fff;border:1px solid var(--border);padding:10px 14px;border-radius:30px;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:28px}
+.d-card{background:#fff;border:1px solid var(--border);border-radius:15px;padding:22px;box-shadow:0 5px 18px rgba(7,26,51,.04)}
+.d-card .label{color:var(--muted);font-size:14px;font-weight:700}
+.d-card .value{font-size:31px;font-weight:900;color:var(--navy);margin-top:10px}
+.d-card .small{font-size:13px;color:#718096;margin-top:7px}
+.panel-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}
+.panel{background:#fff;border:1px solid var(--border);border-radius:15px;padding:24px}
+.panel h2{font-size:22px;margin-bottom:18px}
+.job-row{display:flex;justify-content:space-between;gap:15px;padding:15px 0;border-bottom:1px solid #edf1f5}
+.job-row:last-child{border-bottom:0}
+.job-title{font-weight:800;color:var(--navy)}
+.job-meta{font-size:13px;color:var(--muted);margin-top:5px}
+.status{display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:800;background:#eaf2ff;color:var(--blue)}
+.earn-box{background:var(--navy);color:#fff;border-radius:15px;padding:25px}
+.earn-box .amount{font-size:38px;font-weight:900;margin:10px 0}
+.earn-box p{color:#d7e4f3;font-size:14px}
+.profile-line{padding:12px 0;border-bottom:1px solid #edf1f5}
+.profile-line:last-child{border-bottom:0}
+.profile-line span{display:block;color:var(--muted);font-size:13px;margin-bottom:4px}
+.logout{margin-top:30px;width:100%}
+
+.hidden{display:none!important}
+
+@media(max-width:900px){
+.navlinks a:not(.btn){display:none}
+.hero{grid-template-columns:1fr;padding-top:55px}
+h1{font-size:43px}
+.cards{grid-template-columns:repeat(2,1fr)}
+.panel-grid{grid-template-columns:1fr}
+.sidebar{width:190px}
+}
+@media(max-width:650px){
+nav{padding:0 5%}.navlinks{gap:8px}.navlinks .btn{padding:10px 13px}
+.hero{padding-left:5%;padding-right:5%}
+section{padding-left:5%;padding-right:5%}
+.access-card{padding:30px 22px}
+.dashboard{display:block}
+.sidebar{width:100%;min-height:auto;padding:15px;display:flex;align-items:center;gap:8px;overflow-x:auto}
+.side-brand{padding:0 12px}
+.side-link{white-space:nowrap;margin:0}
+.logout{width:auto;margin:0}
+.dashboard-main{padding:25px 5%}
+.dash-head{display:block}
+.user-pill{display:inline-block;margin-top:12px}
+.cards{grid-template-columns:1fr 1fr;gap:10px}
+.d-card{padding:16px}.d-card .value{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<nav id="mainNav">
+  <a class="brand" href="#home">TS<span>I</span></a>
+  <div class="navlinks">
+    <a href="#jobs">Jobs</a>
+    <a href="#training">Training</a>
+    <a href="#how">How It Works</a>
+    <a href="#login" id="navLogin">Login</a>
+    <a class="btn" href="#register" id="navRegister">Register</a>
+    <a class="btn" href="#apply">Apply Now</a>
+    <a href="#" id="navLogout" class="hidden">Logout</a>
+  </div>
+</nav>
+
+<main id="homePage">
+  <section id="home" class="hero">
+    <div>
+      <span class="badge">REMOTE • FLEXIBLE • GLOBAL</span>
+      <h1>Build your future.<br><span>Work remotely.</span></h1>
+      <p>TSI connects talented people with remote opportunities designed for flexibility, accessible training, and professional growth.</p>
+      <a class="btn" href="#jobs">Explore Opportunities</a>
+    </div>
+    <div class="hero-card">
+      <h2>Remote opportunities for ambitious people</h2>
+      <p>We are currently recruiting talent across the United States, Canada, and Europe.</p>
+      <div class="stats">
+        <div class="stat"><b>3</b>Regions</div>
+        <div class="stat"><b>23+</b>Roles</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="jobs">
+    <div class="center"><h2>Explore Opportunities</h2><p>Choose a role that matches your skills and interests.</p></div>
+    <div class="jobs">
+      <span class="job">Transcriptionist</span><span class="job">Bookkeeper</span><span class="job">Freelance Writer</span>
+      <span class="job">Sales Representative</span><span class="job">Recruiter</span><span class="job">Content Marketer</span>
+      <span class="job">Inbound Call Agent</span><span class="job">Accounting Payroll Clerk</span><span class="job">Administrative Assistant</span>
+      <span class="job">Bookkeeping</span><span class="job">Front Desk Clerk</span><span class="job">Typist Clerk</span>
+      <span class="job">Project Management</span><span class="job">Operations Manager</span><span class="job">Dispatcher</span>
+      <span class="job">Copywriter</span><span class="job">Medical Coder</span><span class="job">Social Media Manager</span>
+      <span class="job">Customer Service Representative</span><span class="job">Sales Associate</span><span class="job">Data Analysis</span>
+      <span class="job">Virtual Assistant</span><span class="job">Data Entry Clerk</span>
+    </div>
+  </section>
+
+  <section id="training" class="band">
+    <div><span class="badge">ONLINE TRAINING & ORIENTATION</span><h2>Start with the support you need.</h2>
+      <p>Our virtual training program is designed to equip you with the skills and knowledge needed for success. Training is available online through a PC or phone, with a one-week program built around a flexible and supportive learning environment.</p>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="center"><h2>How It Works</h2><p>A simple path from interest to opportunity.</p></div>
+    <div class="steps">
+      <div class="step" data-n="1"><h3>Choose a role</h3><p>Select the opportunity that best matches your interests and experience.</p></div>
+      <div class="step" data-n="2"><h3>Contact Management</h3><p>Contact the TSI Management Team on Telegram to begin the interview process.</p></div>
+      <div class="step" data-n="3"><h3>Get approved</h3><p>Once your interview is completed and your account is approved, your dashboard becomes available.</p></div>
+    </div>
+  </section>
+
+  <section id="apply">
+    <div class="cta">
+      <div><h2>Ready to get started?</h2><p><b>Interview Code:</b> JCT-1MT<br><b>Telegram:</b> @tsi_hire</p></div>
+      <a class="btn" href="https://t.me/tsi_hire" target="_blank">Contact Us on Telegram</a>
+    </div>
+  </section>
+</main>
+
+<section id="authPage" class="auth-page page hidden">
+  <div class="auth-wrap">
+
+    <div id="registerCard" class="auth-card hidden">
+      <span class="badge">NEW APPLICANTS</span>
+      <h2>Create Your TSI Account</h2>
+      <p>Register to access remote opportunities and manage your application.</p>
+      <div class="form">
+        <label>Full Name
+          <input id="regName" type="text" autocomplete="name" placeholder="Enter your full name">
+        </label>
+        <label>Email
+          <input id="regEmail" type="email" autocomplete="email" placeholder="Enter your email">
+        </label>
+        <label>Password
+          <input id="regPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Create a password">
+        </label>
+        <button class="btn full" id="registerSubmit">Create Account</button>
+        <div id="regMsg"></div>
+        <p class="switch">Already have an account? <a href="#login">Login</a></p>
+      </div>
+    </div>
+
+    <div id="loginCard" class="auth-card hidden">
+      <span class="badge">RETURNING APPLICANTS</span>
+      <h2>Applicant Login</h2>
+      <p>Sign in to continue with your TSI application.</p>
+      <div class="form">
+        <label>Email
+          <input id="loginEmail" type="email" autocomplete="email" placeholder="Enter your email">
+        </label>
+        <label>Password
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password">
+        </label>
+        <button class="btn full" id="loginSubmit">Login</button>
+        <button class="btn secondary full" id="resetSubmit">Forgot Password?</button>
+        <div id="loginMsg"></div>
+        <p class="switch">New applicant? <a href="#register">Create an account</a></p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="accessPage" class="access-page hidden">
+  <div class="access-card">
+    <span class="badge">ACCOUNT ACTIVE</span>
+    <h2>Dashboard Access</h2>
+    <p>To access your dashboard and start working, please contact the Management team on Telegram to get your access.</p>
+    <div class="telegram">@tsi_hire</div>
+    <a class="btn" href="https://t.me/tsi_hire" target="_blank">Contact Management on Telegram</a>
+    <br><br>
+    <button class="btn secondary" onclick="logoutUser()">Logout</button>
+  </div>
+</section>
+
+<section id="dashboardPage" class="dashboard-page hidden">
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="side-brand">TS<span>I</span></div>
+      <a class="side-link active" href="#dashboard">Dashboard</a>
+      <a class="side-link" href="#dashboard">Jobs</a>
+      <a class="side-link" href="#dashboard">Earnings</a>
+      <a class="side-link" href="#dashboard">Profile</a>
+      <a class="side-link" href="https://t.me/tsi_hire" target="_blank">Support</a>
+      <button class="btn logout" onclick="logoutUser()">Logout</button>
+    </aside>
+
+    <div class="dashboard-main">
+      <div class="dash-head">
+        <div>
+          <span class="badge">TSI WORKSPACE</span>
+          <h1>Welcome, <span id="dashName">Applicant</span></h1>
+        </div>
+        <div class="user-pill" id="dashRole">Role: Not Assigned</div>
+      </div>
+
+      <div class="cards">
+        <div class="d-card"><div class="label">ROLE</div><div class="value" id="roleValue">Not Assigned</div><div class="small">Your assigned position</div></div>
+        <div class="d-card"><div class="label">JOBS AVAILABLE</div><div class="value" id="jobsValue">0</div><div class="small">Jobs available to you</div></div>
+        <div class="d-card"><div class="label">WORK COMPLETED</div><div class="value" id="completedValue">0</div><div class="small">Completed assignments</div></div>
+        <div class="d-card"><div class="label">AMOUNT EARNED</div><div class="value" id="earnedValue">$0.00</div><div class="small">Recorded earnings</div></div>
+      </div>
+
+      <div class="panel-grid">
+        <div class="panel">
+          <h2>Available Jobs</h2>
+          <div id="jobsList"></div>
+        </div>
+
+        <div>
+          <div class="earn-box">
+            <div>Current Earnings</div>
+            <div class="amount" id="earnedBig">$0.00</div>
+            <p>Your recorded earnings are shown here. Contact Management if you need assistance with your account.</p>
+            <a class="btn" href="https://t.me/tsi_hire" target="_blank">Contact Management</a>
+          </div>
+
+          <div class="panel" style="margin-top:20px">
+            <h2>Profile</h2>
+            <div class="profile-line"><span>Full Name</span><b id="profileName">—</b></div>
+            <div class="profile-line"><span>Email</span><b id="profileEmail">—</b></div>
+            <div class="profile-line"><span>Role</span><b id="profileRole">—</b></div>
+            <div class="profile-line"><span>Status</span><span class="status" id="profileStatus">Approved</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="siteFooter">© 2026 TSI • Hire Remote Talent</footer>
+
+<script>
+const SUPABASE_URL = 'https://sxdyrmvfizjmpmubjmwo.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_nMN-LaIE9PjiwV7t610Xxw_WSwqSCxV';
+const SITE_URL = 'https://tsi-hire.github.io/Tsi-hire/';
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+const homePage = document.getElementById('homePage');
+const authPage = document.getElementById('authPage');
+const accessPage = document.getElementById('accessPage');
+const dashboardPage = document.getElementById('dashboardPage');
+const siteFooter = document.getElementById('siteFooter');
+const mainNav = document.getElementById('mainNav');
+const navLogin = document.getElementById('navLogin');
+const navRegister = document.getElementById('navRegister');
+const navLogout = document.getElementById('navLogout');
+
+function showMessage(id, text, success=false) {
+  const el = document.getElementById(id);
+  el.innerHTML = '<div class="message ' + (success ? 'success' : 'error') + '">' + escapeHtml(text) + '</div>';
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];
+  });
+}
+
+function formatMoney(value) {
+  const n = Number(value || 0);
+  return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function hideAllPages() {
+  homePage.classList.add('hidden');
+  authPage.classList.add('hidden');
+  accessPage.classList.add('hidden');
+  dashboardPage.classList.add('hidden');
+}
+
+function updateNav(loggedIn) {
+  if (loggedIn) {
+    navLogin.classList.add('hidden');
+    navRegister.classList.add('hidden');
+    navLogout.classList.remove('hidden');
+  } else {
+    navLogin.classList.remove('hidden');
+    navRegister.classList.remove('hidden');
+    navLogout.classList.add('hidden');
+  }
+}
+
+async function getCurrentUser() {
+  const {data, error} = await supabaseClient.auth.getUser();
+  if (error || !data.user) return null;
+  return data.user;
+}
+
+async function getProfile(userId) {
+  const {data, error} = await supabaseClient
+    .from('profiles')
+    .select('id,full_name,status,role,jobs_available,work_completed,amount_earned,created_at')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Profile error:', error);
+    return null;
+  }
+  return data;
+}
+
+async function route() {
+  const hash = location.hash.toLowerCase();
+
+  const user = await getCurrentUser();
+
+  if (user) {
+    updateNav(true);
+
+    if (hash === '#logout') {
+      await logoutUser();
+      return;
+    }
+
+    if (hash === '#login' || hash === '#register') {
+      await showLoggedInDestination(user);
+      return;
+    }
+
+    await showLoggedInDestination(user);
+    return;
+  }
+
+  updateNav(false);
+
+  if (hash === '#login' || hash === '#register') {
+    homePage.classList.add('hidden');
+    authPage.classList.remove('hidden');
+    accessPage.classList.add('hidden');
+    dashboardPage.classList.add('hidden');
+    siteFooter.classList.remove('hidden');
+
+    document.getElementById('loginCard').classList.toggle('hidden', hash !== '#login');
+    document.getElementById('registerCard').classList.toggle('hidden', hash !== '#register');
+    window.scrollTo(0,0);
+  } else {
+    hideAllPages();
+    homePage.classList.remove('hidden');
+    siteFooter.classList.remove('hidden');
+  }
+}
+
+async function showLoggedInDestination(user) {
+  const profile = await getProfile(user.id);
+
+  if (!profile) {
+    hideAllPages();
+    accessPage.classList.remove('hidden');
+    siteFooter.classList.add('hidden');
+    accessPage.querySelector('p').textContent =
+      'Your account is registered, but your applicant profile is still being prepared. Please contact Management on Telegram to get access.';
+    window.scrollTo(0,0);
+    return;
+  }
+
+  const status = String(profile.status || 'pending').toLowerCase();
+
+  if (status === 'approved') {
+    loadDashboard(user, profile);
+    hideAllPages();
+    dashboardPage.classList.remove('hidden');
+    siteFooter.classList.add('hidden');
+    location.hash = 'dashboard';
+    window.scrollTo(0,0);
+  } else {
+    hideAllPages();
+    accessPage.classList.remove('hidden');
+    siteFooter.classList.add('hidden');
+    window.scrollTo(0,0);
+  }
+}
+
+function loadDashboard(user, profile) {
+  const name = profile.full_name || user.user_metadata?.full_name || 'Applicant';
+  const role = profile.role || 'Not Assigned';
+  const jobs = Number(profile.jobs_available || 0);
+  const completed = Number(profile.work_completed || 0);
+  const earned = Number(profile.amount_earned || 0);
+
+  document.getElementById('dashName').textContent = name.split(' ')[0] || name;
+  document.getElementById('dashRole').textContent = 'Role: ' + role;
+  document.getElementById('roleValue').textContent = role;
+  document.getElementById('jobsValue').textContent = jobs;
+  document.getElementById('completedValue').textContent = completed;
+  document.getElementById('earnedValue').textContent = formatMoney(earned);
+  document.getElementById('earnedBig').textContent = formatMoney(earned);
+
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileEmail').textContent = user.email || '—';
+  document.getElementById('profileRole').textContent = role;
+  document.getElementById('profileStatus').textContent = 'Approved';
+
+  const jobsList = document.getElementById('jobsList');
+
+  if (jobs <= 0) {
+    jobsList.innerHTML =
+      '<div class="job-row"><div><div class="job-title">No jobs currently assigned</div><div class="job-meta">Check back later or contact Management on Telegram.</div></div><span class="status">0 available</span></div>';
+    return;
+  }
+
+  jobsList.innerHTML = '';
+  const visible = Math.min(jobs, 5);
+
+  for (let i=1; i<=visible; i++) {
+    const row = document.createElement('div');
+    row.className = 'job-row';
+    row.innerHTML =
+      '<div><div class="job-title">' + escapeHtml(role) + ' Assignment ' + i + '</div>' +
+      '<div class="job-meta">Available assignment • Contact Management for task details</div></div>' +
+      '<span class="status">Available</span>';
+    jobsList.appendChild(row);
+  }
+}
+
+async function registerUser() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+
+  if (!name || !email || password.length < 6) {
+    showMessage('regMsg','Please enter your full name, a valid email address, and a password of at least 6 characters.');
+    return;
+  }
+
+  const {data, error} = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {full_name: name},
+      emailRedirectTo: SITE_URL
+    }
+  });
+
+  if (error) {
+    showMessage('regMsg', error.message);
+    return;
+  }
+
+  document.getElementById('regPassword').value = '';
+
+  if (data.session) {
+    showMessage('regMsg','Your account was created. Redirecting...',true);
+    setTimeout(() => showLoggedInDestination(data.user), 500);
+  } else {
+    showMessage('regMsg','Account created successfully. Please check your email and click the verification link. You will then return to the TSI website.',true);
+  }
+}
+
+async function loginUser() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!email || !password) {
+    showMessage('loginMsg','Enter your email and password.');
+    return;
+  }
+
+  const {data, error} = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    showMessage('loginMsg',error.message);
+    return;
+  }
+
+  await showLoggedInDestination(data.user);
+}
+
+async function resetUser() {
+  const email = document.getElementById('loginEmail').value.trim();
+
+  if (!email) {
+    showMessage('loginMsg','Enter your email address first.');
+    return;
+  }
+
+  const {error} = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: SITE_URL + '#login'
+  });
+
+  if (error) {
+    showMessage('loginMsg',error.message);
+  } else {
+    showMessage('loginMsg','Password reset instructions have been sent to your email.',true);
+  }
+}
+
+async function logoutUser() {
+  await supabaseClient.auth.signOut();
+  location.hash = 'home';
+  await route();
+}
+
+document.getElementById('registerSubmit').addEventListener('click', registerUser);
+document.getElementById('loginSubmit').addEventListener('click', loginUser);
+document.getElementById('resetSubmit').addEventListener('click', resetUser);
+
+navLogout.addEventListener('click', async function(e) {
+  e.preventDefault();
+  await logoutUser();
+});
+
+window.addEventListener('hashchange', route);
+
+supabaseClient.auth.onAuthStateChange(function(event, session) {
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    setTimeout(() => route(), 0);
+  }
+  if (event === 'SIGNED_OUT') {
+    setTimeout(() => route(), 0);
+  }
+});
+
+route();
+</script>
+</body>
+</html>
